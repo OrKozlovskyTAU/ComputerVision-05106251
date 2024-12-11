@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 
 from solution import Solution
-
+import cv2 as cv
 
 COST1 = 0.5
 COST2 = 3.0
@@ -70,10 +70,15 @@ def main():
     fig = plt.figure()
     plt.subplot(1, 2, 1)
     plt.imshow(left_image)
-    plt.subplot(1, 2, 2)
-    plt.imshow(label_map)
-    plt.colorbar()
+    plt.axis('off')
+    plt.title('Left Image')
+    ax = plt.subplot(1, 2, 2)
+    im = plt.imshow(label_map)
+    plt.axis('off')
     plt.title('Naive Depth')
+    cax = plt.add_axes([ax.get_position().x1 + 0.01, ax.get_position().y0, 0.02, ax.get_position().height])
+    plt.colorbar(im, cax=cax)
+    plt.savefig(f'results/naive_depth.png')
 
     # Smooth disparity image - Dynamic Programming
     tt = tic()
@@ -81,28 +86,52 @@ def main():
     print(f"Dynamic Programming done in {toc(tt):.4f}[seconds]")
 
     # plot the left image and the estimated depth
-    plt.figure()
+    fig = plt.figure()
     plt.subplot(1, 2, 1)
     plt.imshow(left_image)
     plt.title('Source Image')
-    plt.subplot(1, 2, 2)
-    plt.imshow(label_smooth_dp)
-    plt.colorbar()
+    plt.axis('off')
+    ax = plt.subplot(1, 2, 2)
+    im = plt.imshow(label_smooth_dp)
+    plt.axis('off')
     plt.title('Smooth Depth - DP')
+    cax = fig.add_axes([ax.get_position().x1 + 0.01, ax.get_position().y0, 0.02, ax.get_position().height])
+    plt.colorbar(im, cax=cax)
+    plt.savefig(f'results/smooth_depth_dp.png')
 
     # Compute forward map of the left image to the right image.
     mapped_image_smooth_dp = forward_map(left_image, labels=label_smooth_dp)
+    right_to_mapped_smooth_dp_diff = np.abs(
+        cv.cvtColor(mapped_image_smooth_dp, cv.COLOR_RGB2GRAY) - cv.cvtColor(right_image, cv.COLOR_RGB2GRAY)
+    )
+    right_to_left_dp_diff = np.abs(
+        cv.cvtColor(left_image, cv.COLOR_RGB2GRAY) - cv.cvtColor(right_image, cv.COLOR_RGB2GRAY)
+    )
+
     # plot left image, forward map image and right image
     plt.figure()
-    plt.subplot(1, 3, 1)
+    plt.subplot(2, 3, 1)
     plt.imshow(left_image)
-    plt.title('Source Image')
-    plt.subplot(1, 3, 2)
+    plt.title('Left Image')
+    plt.axis('off')
+    plt.subplot(2, 3, 2)
     plt.imshow(mapped_image_smooth_dp)
     plt.title('Smooth Forward map - DP')
-    plt.subplot(1, 3, 3)
+    plt.axis('off')
+    plt.subplot(2, 3, 3)
     plt.imshow(right_image)
+    plt.axis('off')
     plt.title('Right Image')
+    plt.subplot(2, 3, 5)
+    plt.imshow(right_to_mapped_smooth_dp_diff, cmap='gray')
+    plt.title('Right vs Forward map')
+    plt.axis('off')
+    plt.subplot(2, 3, 6)
+    plt.imshow(right_to_left_dp_diff, cmap='gray')
+    plt.title('Right vs Left')
+    plt.axis('off')
+    plt.tight_layout()
+    plt.savefig(f'results/smooth_forward_map_dp.png')
 
     # Generate a dictionary which maps each direction to a label map:
     tt = tic()
