@@ -178,7 +178,6 @@ class Solution:
         c_slices = np.split(ssdd_tensor, ssdd_tensor.shape[0], axis=0)
         l_slices = [self.dp_grade_slice(c_slice.squeeze().T, p1, p2) for c_slice in c_slices]
         l = np.stack(l_slices, axis=2).T
-
         #######################################################################
 
         return self.naive_labeling(l)
