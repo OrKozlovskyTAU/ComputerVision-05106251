@@ -31,9 +31,7 @@ def forward_map(left_image, labels):
     mapped = np.zeros_like(left_image)
     for row in range(left_image.shape[0]):
         cols = range(left_image.shape[1])
-        mapped[row,
-               np.clip(cols - labels[row, ...], 0, left_image.shape[1] - 1),
-               ...] = left_image[row, cols, ...]
+        mapped[row, np.clip(cols - labels[row, ...], 0, left_image.shape[1] - 1), ...] = left_image[row, cols, ...]
     return mapped
 
 
@@ -51,15 +49,16 @@ def load_data(is_your_data=False):
 def main():
     WIN_SIZE = 3
     DISPARITY_RANGE = 20
+    COST1 = 0.5
+    COST2 = 3.0
 
     left_image, right_image = load_data()
     solution = Solution()
     # Compute Sum-Square-Diff distance
     tt = tic()
-    ssdd = solution.ssd_distance(left_image.astype(np.float64),
-                                 right_image.astype(np.float64),
-                                 win_size=WIN_SIZE,
-                                 dsp_range=DISPARITY_RANGE)
+    ssdd = solution.ssd_distance(
+        left_image.astype(np.float64), right_image.astype(np.float64), win_size=WIN_SIZE, dsp_range=DISPARITY_RANGE
+    )
     print(f"SSDD calculation done in {toc(tt):.4f}[seconds]")
 
     # Construct naive disparity image
@@ -108,8 +107,7 @@ def main():
     # Generate a dictionary which maps each direction to a label map:
     tt = tic()
     direction_to_vote = solution.dp_labeling_per_direction(ssdd, COST1, COST2)
-    print(f"Dynamic programming in all directions done in {toc(tt):.4f}"
-          f"[seconds]")
+    print(f"Dynamic programming in all directions done in {toc(tt):.4f}" f"[seconds]")
 
     # Plot all directions as well as the image, in the center of the plot:
     plt.figure()
@@ -156,26 +154,26 @@ def main():
     ###########################################################################
     ########################### YOUR IMAGE PLAYGROUND #########################
     ###########################################################################
-    COST1 = 0.5           # YOU MAY CHANGE THIS
-    COST2 = 3.0           # YOU MAY CHANGE THIS
-    WIN_SIZE = 3          # YOU MAY CHANGE THIS
+    COST1 = 0.5  # YOU MAY CHANGE THIS
+    COST2 = 3.0  # YOU MAY CHANGE THIS
+    WIN_SIZE = 3  # YOU MAY CHANGE THIS
     DISPARITY_RANGE = 20  # YOU MAY CHANGE THIS
 
     your_left_image, your_right_image = load_data(is_your_data=True)
     solution = Solution()
     # Compute Sum-Square-Diff distance
     tt = tic()
-    your_ssdd = solution.ssd_distance(your_left_image.astype(np.float64),
-                                      your_right_image.astype(np.float64),
-                                      win_size=WIN_SIZE,
-                                      dsp_range=DISPARITY_RANGE)
+    your_ssdd = solution.ssd_distance(
+        your_left_image.astype(np.float64),
+        your_right_image.astype(np.float64),
+        win_size=WIN_SIZE,
+        dsp_range=DISPARITY_RANGE,
+    )
     print(f"SSDD calculation on your image took: {toc(tt):.4f}[seconds]")
 
     # plot all directions as well as the image, in the center of the plot
     tt = tic()
-    your_direction_to_vote = solution.dp_labeling_per_direction(your_ssdd,
-                                                                COST1,
-                                                                COST2)
+    your_direction_to_vote = solution.dp_labeling_per_direction(your_ssdd, COST1, COST2)
     print(f"Dynamic programming in all directions took: {toc(tt):.4f}[seconds]")
     # Plot all directions as well as the image, in the center of the plot:
     plt.figure()
@@ -205,8 +203,7 @@ def main():
     plt.title('Your Smooth Depth - SGM')
 
     # Plot the forward map based on the Semi-Global Mapping result:
-    your_mapped_image_smooth_sgm = forward_map(your_left_image,
-                                               labels=your_label_smooth_sgm)
+    your_mapped_image_smooth_sgm = forward_map(your_left_image, labels=your_label_smooth_sgm)
     plt.figure()
     plt.subplot(1, 3, 1)
     plt.imshow(your_left_image)
