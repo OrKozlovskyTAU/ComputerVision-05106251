@@ -1,11 +1,12 @@
 """Main training script."""
+
 import argparse
 
 from torch import nn
 from torch import optim
 
 from utils import load_dataset, load_model
-from trainer import LoggingParameters, Trainer
+from ref.trainer import LoggingParameters, Trainer
 
 
 # Arguments
@@ -17,21 +18,15 @@ def parse_args():
     Get training dataset and the model name.
     """
     parser = argparse.ArgumentParser(description='Training models with Pytorch')
-    parser.add_argument('--lr', default=0.001, type=float,
-                        help='learning rate')
-    parser.add_argument('--momentum', default=0.9, type=float,
-                        help='SGD momentum')
-    parser.add_argument('--batch_size', '-b', default=128, type=int,
-                        help='Training batch size')
-    parser.add_argument('--epochs', '-e', default=2, type=int,
-                        help='Number of epochs to run')
-    parser.add_argument('--model', '-m', default='SimpleNet', type=str,
-                        help='Model name: SimpleNet or XceptionBased')
-    parser.add_argument('--optimizer', '-o', default='SGD', type=str,
-                        help='Optimization Algorithm')
-    parser.add_argument('--dataset', '-d',
-                        default='fakes_dataset', type=str,
-                        help='Dataset: fakes_dataset or synthetic_dataset.')
+    parser.add_argument('--lr', default=0.001, type=float, help='learning rate')
+    parser.add_argument('--momentum', default=0.9, type=float, help='SGD momentum')
+    parser.add_argument('--batch_size', '-b', default=128, type=int, help='Training batch size')
+    parser.add_argument('--epochs', '-e', default=2, type=int, help='Number of epochs to run')
+    parser.add_argument('--model', '-m', default='SimpleNet', type=str, help='Model name: SimpleNet or XceptionBased')
+    parser.add_argument('--optimizer', '-o', default='SGD', type=str, help='Optimization Algorithm')
+    parser.add_argument(
+        '--dataset', '-d', default='fakes_dataset', type=str, help='Dataset: fakes_dataset or synthetic_dataset.'
+    )
 
     return parser.parse_args()
 
@@ -42,8 +37,7 @@ def main():
     # Data
     print(f'==> Preparing data: {args.dataset.replace("_", " ")}..')
 
-    train_dataset = load_dataset(dataset_name=args.dataset,
-                                 dataset_part='train')
+    train_dataset = load_dataset(dataset_name=args.dataset, dataset_part='train')
     val_dataset = load_dataset(dataset_name=args.dataset, dataset_part='val')
     test_dataset = load_dataset(dataset_name=args.dataset, dataset_part='test')
 
@@ -56,9 +50,7 @@ def main():
 
     # Build optimizer
     optimizers = {
-        'SGD': lambda: optim.SGD(model.parameters(),
-                                 lr=args.lr,
-                                 momentum=args.momentum),
+        'SGD': lambda: optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum),
         'Adam': lambda: optim.Adam(model.parameters(), lr=args.lr),
     }
 
@@ -79,20 +71,24 @@ def main():
     batch_size = args.batch_size
 
     # Training Logging Parameters
-    logging_parameters = LoggingParameters(model_name=model_name,
-                                           dataset_name=args.dataset,
-                                           optimizer_name=optimizer_name,
-                                           optimizer_params=optimizer_params,)
+    logging_parameters = LoggingParameters(
+        model_name=model_name,
+        dataset_name=args.dataset,
+        optimizer_name=optimizer_name,
+        optimizer_params=optimizer_params,
+    )
 
     # Create an abstract trainer to train the model with the data and parameters
     # above:
-    trainer = Trainer(model=model,
-                      optimizer=optimizer,
-                      criterion=criterion,
-                      batch_size=batch_size,
-                      train_dataset=train_dataset,
-                      validation_dataset=val_dataset,
-                      test_dataset=test_dataset)
+    trainer = Trainer(
+        model=model,
+        optimizer=optimizer,
+        criterion=criterion,
+        batch_size=batch_size,
+        train_dataset=train_dataset,
+        validation_dataset=val_dataset,
+        test_dataset=test_dataset,
+    )
 
     # Train, evaluate and test the model:
     trainer.run(epochs=args.epochs, logging_parameters=logging_parameters)
