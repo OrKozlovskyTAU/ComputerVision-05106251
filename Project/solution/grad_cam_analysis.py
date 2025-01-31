@@ -1,4 +1,5 @@
 """Show network train graphs and analyze training results."""
+
 import os
 import argparse
 
@@ -11,6 +12,8 @@ from torch.utils.data import DataLoader
 from common import FIGURES_DIR
 from utils import load_dataset, load_model
 
+from pytorch_grad_cam import GradCAM
+from pytorch_grad_cam.utils.image import show_cam_on_image
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -23,22 +26,22 @@ def parse_args():
         Namespace with model name, checkpoint path and dataset name.
     """
     parser = argparse.ArgumentParser(description='Analyze network performance.')
-    parser.add_argument('--model', '-m',
-                        default='XceptionBased', type=str,
-                        help='Model name: SimpleNet or XceptionBased.')
-    parser.add_argument('--checkpoint_path', '-cpp',
-                        default='checkpoints/XceptionBased.pt', type=str,
-                        help='Path to model checkpoint.')
-    parser.add_argument('--dataset', '-d',
-                        default='fakes_dataset', type=str,
-                        help='Dataset: fakes_dataset or synthetic_dataset.')
+    parser.add_argument(
+        '--model', '-m', default='XceptionBased', type=str, help='Model name: SimpleNet or XceptionBased.'
+    )
+    parser.add_argument(
+        '--checkpoint_path', '-cpp', default='checkpoints/XceptionBased.pt', type=str, help='Path to model checkpoint.'
+    )
+    parser.add_argument(
+        '--dataset', '-d', default='fakes_dataset', type=str, help='Dataset: fakes_dataset or synthetic_dataset.'
+    )
 
     return parser.parse_args()
 
 
-def get_grad_cam_visualization(test_dataset: torch.utils.data.Dataset,
-                               model: torch.nn.Module) -> tuple[np.ndarray,
-                                                                torch.tensor]:
+def get_grad_cam_visualization(
+    test_dataset: torch.utils.data.Dataset, model: torch.nn.Module
+) -> tuple[np.ndarray, torch.tensor]:
     """Return a tuple with the GradCAM visualization and true class label.
 
     Args:
@@ -52,7 +55,16 @@ def get_grad_cam_visualization(test_dataset: torch.utils.data.Dataset,
         of batch size 1, it's a tensor of shape (1,)).
     """
     """INSERT YOUR CODE HERE, overrun return."""
-    return np.random.rand(256, 256, 3), torch.randint(0, 2, (1,))
+    ######################################################################
+
+    dataloader = DataLoader(test_dataset, batch_size=1, shuffle=True)
+    img, label = next(iter(dataloader))
+    cam = GradCAM(model=model, target_layers=[model.conv3], use_cuda=torch.cuda.is_available())
+    grayscale_cam = cam(input_tensor=img)
+    rgb_img = np.float32(np.transpose(img[0].numpy(), (1, 2, 0)))
+    rgb_img = (rgb_img - rgb_img.min()) / (rgb_img.max() - rgb_img.min())
+    visualization = show_cam_on_image(rgb_img, grayscale_cam[0], use_rgb=True)
+    return visualization, label
 
 
 def main():
@@ -68,17 +80,15 @@ def main():
     model.eval()
     seen_labels = []
     while len(set(seen_labels)) != 2:
-        visualization, true_label = get_grad_cam_visualization(test_dataset,
-                                                               model)
+        visualization, true_label = get_grad_cam_visualization(test_dataset, model)
         grad_cam_figure = plt.figure()
         plt.imshow(visualization)
         title = 'Fake Image' if true_label == 1 else 'Real Image'
         plt.title(title)
         seen_labels.append(true_label.item())
         grad_cam_figure.savefig(
-            os.path.join(FIGURES_DIR,
-                         f'{args.dataset}_{args.model}_'
-                         f'{title.replace(" ", "_")}_grad_cam.png'))
+            os.path.join(FIGURES_DIR, f'{args.dataset}_{args.model}_' f'{title.replace(" ", "_")}_grad_cam.png')
+        )
 
 
 if __name__ == "__main__":
