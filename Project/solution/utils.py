@@ -6,7 +6,7 @@ import torch
 from torch import nn
 from torchvision import transforms
 
-from faces_dataset import FacesDataset
+from ref.faces_dataset import FacesDataset
 from models import SimpleNet, get_xception_based_model
 from xcpetion import build_xception_backbone
 
@@ -44,7 +44,13 @@ def load_dataset(dataset_name: str, dataset_part: str) -> torch.utils.data.Datas
     """
     transform = {'train': TRANSFORM_TRAIN, 'val': TRANSFORM_TEST, 'test': TRANSFORM_TEST}[dataset_part]
     dataset = FacesDataset(
-        root_path=os.path.join('..', 'Assignment4_datasets', dataset_name, dataset_part), transform=transform
+        root_path=os.path.join(
+            '/home/dcor/orkozlovsky/HW/ComputerVision-05106251/Project',
+            'Assignment4_datasets',
+            dataset_name,
+            dataset_part,
+        ),
+        transform=transform,
     )
     return dataset
 
