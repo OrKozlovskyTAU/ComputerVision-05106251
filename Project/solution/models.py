@@ -54,12 +54,5 @@ def get_xception_based_model() -> nn.Module:
         nn.ReLU(),
         nn.Linear(64, 2),
     )
-
-    # As a debugging tool, use the method “get nof params” in
-    # the utils.py module to calculate the number of parameters in your model.
-    # The full Xception with the MLP head should include 23128786 parameters.
-    # nof_params = get_nof_params(model)
-    # print(f"Number of parameters: {nof_params}")
-
     ######################################################################
     return model
