@@ -115,15 +115,25 @@ class Trainer:
         nof_samples = 0
         correct_labeled_samples = 0
         print_every = max(int(len(dataloader) / 10), 1)
+        # remove gradients during evaluation 
+        with torch.no_grad():
+            for batch_idx, (inputs, targets) in enumerate(dataloader):
+                """INSERT YOUR CODE HERE."""
 
-        for batch_idx, (inputs, targets) in enumerate(dataloader):
-            """INSERT YOUR CODE HERE."""
-            if batch_idx % print_every == 0 or batch_idx == len(dataloader) - 1:
-                print(f'Epoch [{self.epoch:03d}] | Loss: {avg_loss:.3f} | '
-                      f'Acc: {accuracy:.2f}[%] '
-                      f'({correct_labeled_samples}/{nof_samples})')
-
-        return avg_loss, accuracy
+                inputs, targets = inputs.to(device), targets.to(device)
+                preds = self.model(inputs)
+                loss = self.criterion(preds, targets).item()
+                total_loss += loss
+                avg_loss = total_loss / (batch_idx + 1)
+                correct_labeled_samples += torch.sum(torch.argmax(preds, dim=1) == targets).item()
+                nof_samples = self.batch_size * (batch_idx + 1)
+                accuracy = correct_labeled_samples / nof_samples * 100
+                """UPTO HERE."""
+                if batch_idx % print_every == 0 or batch_idx == len(dataloader) - 1:
+                    print(f'Epoch [{self.epoch:03d}] | Loss: {avg_loss:.3f} | '
+                          f'Acc: {accuracy:.2f}[%] '
+                          f'({correct_labeled_samples}/{nof_samples})')
+            return avg_loss, accuracy
 
     def validate(self):
         """Evaluate the model performance."""
