@@ -61,6 +61,31 @@ class Trainer:
 
         for batch_idx, (inputs, targets) in enumerate(train_dataloader):
             """INSERT YOUR CODE HERE."""
+            # Move inputs and targets to the device (e.g., GPU)
+            inputs, targets = inputs.to(device), targets.to(device)
+
+            # Reset the gradients
+            self.optimizer.zero_grad()
+
+            # FWD pass: Get model predictions
+            # will return a (batch_size, 2) tensor with the scores
+            outputs = self.model(inputs)
+
+            # Compute the loss
+            loss = self.criterion(outputs, targets)
+
+            # BWD pass: Compute gradients
+            loss.backward()
+
+            # Update model parameters
+            self.optimizer.step()
+
+            total_loss += loss.item()
+            avg_loss = total_loss / (batch_idx + 1)
+            #column 0 is score for real images, column 1 is score for fake images
+            correct_labeled_samples += torch.sum(torch.argmax(outputs, dim=1) == targets).item()
+            nof_samples = self.batch_size * (batch_idx+1)
+            accuracy = correct_labeled_samples / nof_samples * 100
             if batch_idx % print_every == 0 or \
                     batch_idx == len(train_dataloader) - 1:
                 print(f'Epoch [{self.epoch:03d}] | Loss: {avg_loss:.3f} | '
