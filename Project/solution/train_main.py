@@ -6,7 +6,7 @@ from torch import nn
 from torch import optim
 
 from utils import load_dataset, load_model
-from ref.trainer import LoggingParameters, Trainer
+from trainer import LoggingParameters, Trainer
 
 
 # Arguments

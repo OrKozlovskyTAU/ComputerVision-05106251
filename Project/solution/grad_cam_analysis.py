@@ -56,15 +56,15 @@ def get_grad_cam_visualization(
     """
     """INSERT YOUR CODE HERE, overrun return."""
     ######################################################################
-
     dataloader = DataLoader(test_dataset, batch_size=1, shuffle=True)
     img, label = next(iter(dataloader))
-    cam = GradCAM(model=model, target_layers=[model.conv3], use_cuda=torch.cuda.is_available())
+    cam = GradCAM(model=model, target_layers=[model.conv3])
     grayscale_cam = cam(input_tensor=img)
     rgb_img = np.float32(np.transpose(img[0].numpy(), (1, 2, 0)))
     rgb_img = (rgb_img - rgb_img.min()) / (rgb_img.max() - rgb_img.min())
     visualization = show_cam_on_image(rgb_img, grayscale_cam[0], use_rgb=True)
     return visualization, label
+    ######################################################################
 
 
 def main():

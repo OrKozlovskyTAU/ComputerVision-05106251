@@ -6,7 +6,7 @@ import torch
 from torch import nn
 from torchvision import transforms
 
-from ref.faces_dataset import FacesDataset
+from faces_dataset import FacesDataset
 from models import SimpleNet, get_xception_based_model
 from xcpetion import build_xception_backbone
 
